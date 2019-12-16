@@ -1,0 +1,53 @@
+server:
+  port: 8080
+
+security:
+    encoding-strength: 256
+    jwt:
+        client-id: mitomediapp
+        client-secret: mito89codex
+        grant-type: password
+        resource-ids: mitoresourceid
+        scope-read: read
+        scope-write: write
+    oauth2:
+        resource:
+            filter-order: 3
+    security-realm: Spring Boot JWT
+    signing-key: MaYzkSjmkzPC57L
+spring:
+    datasource:
+        driver-class-name: org.postgresql.Driver
+        password: ${password}
+        url: jdbc:postgresql://${host}:5432/mediappbd4
+        username: ${username}
+    jackson:
+        default-property-inclusion: NON_NULL
+    jpa:
+        database: postgresql
+        hibernate:
+            ddl-auto: update
+        properties:
+            hibernate:
+                jdbc:
+                    lob:
+                        non_contextual_creation: true
+        show-sql: false
+
+    mail:
+        default-encoding: UTF-8
+        host: smtp.gmail.com
+        username: TU_USUARIO
+        password: TU_CLAVE
+        port: 587
+        properties:
+          mail:
+          ssl:
+            enable: true
+          smtp:
+          auth: true
+          starttls:
+            enable: true       
+            required: true     
+        protocol: smtp
+        test-connection: false
