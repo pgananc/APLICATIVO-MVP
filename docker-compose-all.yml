@@ -1,0 +1,63 @@
+version: '3.4'
+
+services:
+
+  postgresql_server:
+    build: ./dockerfile-postgresql/
+    image: docker.bintray.io/postgres:9.6.11
+    ports:
+     - 5432:5432
+    environment:
+     - POSTGRES_DB=mediappbd4
+     - POSTGRES_USER=postgres
+     - POSTGRES_PASSWORD=postgres
+    volumes:
+     
+     - ./dockerfile-postgresql/scripts-postgresql/:/docker-entrypoint-initdb.d/
+    restart: always
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 32000
+        hard: 40000
+   
+      
+  mediapp-backend:
+    build: ./mediapp-backend/    
+    image: pgananc/mediapp-backend:latest
+    environment: 
+      - host=postgresql
+      - username=postgres
+      - password=postgres
+    depends_on: 
+      - postgresql_server
+    ports:
+      - "80:8090"
+    restart: on-failure
+    entrypoint: dockerize -wait tcp://postgresql_server:5432 -timeout 10m java -jar /app.war
+
+  frontend:
+    build: ./mediapp-frontend/
+    image: pgananc/frontend-curso:latest
+    container_name: frontend
+    depends_on: 
+      - mediapp-backend
+    ports:
+      - "8100:80"
+    restart: on-failure
+    entrypoint: dockerize -wait http://mediapp-backend:8090/v2/api-docs -timeout 10m nginx -g 'daemon off;'
+
+  sauceconnect:
+      image: pgananc/sauceconnect:latest
+      container_name: sauceconnect
+      command:
+        - -u
+        - ${SAUCELABS_ACCESS_USR:-pgananc}
+        - -k
+        - ${SAUCELABS_ACCESS_PSW:-69595b37-9aae-4340-b5a4-b90d13006e03}
+        - -i
+        - ${TUNNEL_SAUCECONNECT:-javadevops}
+      ports:
+      - "4445:4445"
+      - "8032:8032"
+      #network_mode: "host"
